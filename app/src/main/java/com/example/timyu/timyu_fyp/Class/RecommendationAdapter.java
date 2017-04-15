@@ -6,6 +6,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.example.timyu.timyu_fyp.Activity.RecommandActivity;
+import com.example.timyu.timyu_fyp.R;
+
 import java.util.ArrayList;
 
 /**
@@ -16,7 +19,6 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
 
     ArrayList<SuggestQuestion> data;
     OnItemClickListener listener;
-    //SuggestQuestion suggestQuestion = new SuggestQuestion();
 
     public RecommendationAdapter(ArrayList<SuggestQuestion> nameList){
         this.data = nameList;
@@ -24,12 +26,17 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
 
     @Override
     public RecommendationAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new MyViewHolder(LayoutInflater.from(parent.getContext()).inflate(android.R.layout.simple_list_item_1, parent, false));
+        return new MyViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.suggestion_name_textview, parent, false));
     }
 
     @Override
     public void onBindViewHolder(RecommendationAdapter.MyViewHolder holder, int position) {
-        holder.textView.setText(data.get(position).getPlaceName());
+            if(data.get(position).getStatus()){
+                holder.textView.setText("☑ " +data.get(position).getPlaceName());
+            }else {
+                holder.textView.setText(data.get(position).getPlaceName());
+            }
+
     }
 
     @Override
@@ -49,7 +56,9 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
         public TextView textView;
         public MyViewHolder(View itemView) {
             super(itemView);
-            textView = (TextView) itemView.findViewById(android.R.id.text1);
+
+            textView = (TextView) itemView.findViewById(R.id.suggest_title);
+
             itemView.setOnClickListener(this);
         }
 

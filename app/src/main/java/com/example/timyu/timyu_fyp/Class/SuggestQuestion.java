@@ -6,13 +6,16 @@ package com.example.timyu.timyu_fyp.Class;
 
 public class SuggestQuestion {
     String placeName,placeId;
-    Boolean status;
+    boolean status = false;
+
+
+
 
     public Boolean getStatus() {
         return status;
     }
 
-    public void setStatus(Boolean status) {
+    public void setStatus(boolean status) {
         this.status = status;
     }
 
