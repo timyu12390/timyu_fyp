@@ -101,6 +101,8 @@ public class MainActivity extends AppCompatActivity
                 startActivity(recommend);
                 break;
             case R.id.nav_manage:
+                Intent recommendForm = new Intent(this, RecommandFormActivity.class);
+                startActivity(recommendForm);
                 break;
             case R.id.nav_share:
                 break;
