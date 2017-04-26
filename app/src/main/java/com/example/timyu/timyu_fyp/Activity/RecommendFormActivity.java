@@ -16,6 +16,7 @@ import ernestoyaquello.com.verticalstepperform.interfaces.VerticalStepperForm;
 
 public class RecommendFormActivity extends AppCompatActivity implements VerticalStepperForm {
     private VerticalStepperFormLayout verticalStepperForm;
+    EditText name;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +57,7 @@ public class RecommendFormActivity extends AppCompatActivity implements Vertical
 
     private View createNameStep() {
         // Here we generate programmatically the view that will be added by the system to the step content layout
-        EditText name = new EditText(this);
+        name = new EditText(this);
         name.setSingleLine(true);
         name.setHint("Your name");
 
@@ -81,6 +82,34 @@ public class RecommendFormActivity extends AppCompatActivity implements Vertical
 
     @Override
     public void onStepOpening(int stepNumber) {
+        switch (stepNumber) {
+            case 0:
+                checkName();
+                break;
+            case 1:
+                checkEmail();
+                break;
+            case 2:
+                // As soon as the phone number step is open, we mark it as completed in order to show the "Continue"
+                // button (We do it because this field is optional, so the user can skip it without giving any info)
+                verticalStepperForm.setStepAsCompleted(2);
+                // In this case, the instruction above is equivalent to:
+                // verticalStepperForm.setActiveStepAsCompleted();
+                break;
+        }
+    }
+
+    private void checkName() {
+        if(name.length() >= 3 && name.length() <= 40) {
+            verticalStepperForm.setActiveStepAsCompleted();
+        } else {
+            // This error message is optional (use null if you don't want to display an error message)
+            String errorMessage = "The name must have between 3 and 40 characters";
+            verticalStepperForm.setActiveStepAsUncompleted(errorMessage);
+        }
+    }
+
+    private void checkEmail() {
 
     }
 
