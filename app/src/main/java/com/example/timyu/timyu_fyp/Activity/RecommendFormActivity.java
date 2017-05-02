@@ -1,19 +1,29 @@
 package com.example.timyu.timyu_fyp.Activity;
 
+import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Html;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.timyu.timyu_fyp.R;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 
@@ -25,10 +35,15 @@ import ernestoyaquello.com.verticalstepperform.VerticalStepperFormLayout;
 import ernestoyaquello.com.verticalstepperform.*;
 import ernestoyaquello.com.verticalstepperform.interfaces.VerticalStepperForm;
 
-public class RecommendFormActivity extends AppCompatActivity implements VerticalStepperForm, PlaceSelectionListener {
+public class RecommendFormActivity extends AppCompatActivity implements VerticalStepperForm {
     private VerticalStepperFormLayout verticalStepperForm;
+    private static final int REQUEST_CODE_AUTOCOMPLETE = 1;
     EditText name;
+    Button searchPlace;
+    TextView searchedPlace;
     String TAG = "";
+
+    Double PointLat, PointLng;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,15 +96,21 @@ public class RecommendFormActivity extends AppCompatActivity implements Vertical
     private View createEmailStep() {
         // In this case we generate the view by inflating a XML file
         LayoutInflater inflater = LayoutInflater.from(getBaseContext());
-        LinearLayout emailLayoutContent = (LinearLayout) inflater.inflate(R.layout.email_step_layout, null, false);
+        LinearLayout searchLayoutContent = (LinearLayout) inflater.inflate(R.layout.email_step_layout, null, false);
 
-        PlaceAutocompleteFragment startPointSelect = (PlaceAutocompleteFragment)
-                getFragmentManager().findFragmentById(R.id.autocomplete_fragment);
-        //startPointSelect.setOnPlaceSelectedListener(this);
-        startPointSelect.setOnPlaceSelectedListener(this);
+        searchPlace = (Button)searchLayoutContent.findViewById(R.id.btnSearchPlace);
+        searchedPlace = (TextView)searchLayoutContent.findViewById(R.id.txtSearchedPlace);
 
+        searchPlace.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openAutocompleteActivity();
 
-        return emailLayoutContent;
+            }
+        });
+
+        //return searchedPlace;
+        return searchLayoutContent;
     }
 
     private View createPhoneNumberStep() {
@@ -147,38 +168,56 @@ public class RecommendFormActivity extends AppCompatActivity implements Vertical
 	    super.onRestoreInstanceState(savedInstanceState);
     }
 
-    //@Override
-    public void onPlaceSelected(Place place) {
-        //placeItem.setPlaceName(place);
-
-        //Log.i(TAG, "Place Selected: " + place.getName());
-
-        // Format the returned place's details and display them in the TextView.
-        //txtPlaceName.setText(place.getName());
-
-        /*
-        placeId = place.getId();
-        placeName = (String) place.getName();
-        placeInfo = String.valueOf(place.getWebsiteUri());
-        placeAddress = (String) place.getAddress();
-        placeLat = place.getLatLng().latitude;
-        placeLng = place.getLatLng().longitude;
-        */
-        /*
-        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-        List<Address> addresses = null;
+    private void openAutocompleteActivity() {
         try {
-            addresses = geocoder.getFromLocation(placeLat, placeLng, 1);
-        } catch (IOException e) {
-            e.printStackTrace();
+            // The autocomplete activity requires Google Play Services to be available. The intent
+            // builder checks this and throws an exception if it is not the case.
+            Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
+                    .build(this);
+            startActivityForResult(intent, REQUEST_CODE_AUTOCOMPLETE);
+        } catch (GooglePlayServicesRepairableException e) {
+            // Indicates that Google Play Services is either not installed or not up to date. Prompt
+            // the user to correct the issue.
+            GoogleApiAvailability.getInstance().getErrorDialog(this, e.getConnectionStatusCode(),
+                    0 /* requestCode */).show();
+        } catch (GooglePlayServicesNotAvailableException e) {
+            // Indicates that Google Play Services is not available and the problem is not easily
+            // resolvable.
+            String message = "Google Play Services is not available: " +
+                    GoogleApiAvailability.getInstance().getErrorString(e.errorCode);
+
+            Log.e(TAG, message);
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
         }
-        placeCountry = addresses.get(0).getCountryName();
-        */
-
     }
-
     @Override
-    public void onError(Status status) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // Check that the result was from the autocomplete widget.
+        if (requestCode == REQUEST_CODE_AUTOCOMPLETE) {
+            if (resultCode == RESULT_OK) {
+                // Get the user's selected place from the Intent.
+                Place place = PlaceAutocomplete.getPlace(this, data);
+                Log.i(TAG, "Place Selected: " + place.getName());
+
+                // Format the place's details and display them in the TextView.
+                searchedPlace.setText(place.getName());
+                PointLat = place.getLatLng().latitude;
+                PointLng = place.getLatLng().longitude;
+
+            } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
+                Status status = PlaceAutocomplete.getStatus(this, data);
+                Log.e(TAG, "Error: Status = " + status.toString());
+            } else if (resultCode == RESULT_CANCELED) {
+                // Indicates that the activity closed before a selection was made. For example if
+                // the user pressed the back button.
+            }
+        }
+    }
+
+    public void distanceBetween(double lagA, double lngA, double latB, double lngB){
 
     }
+
 }
