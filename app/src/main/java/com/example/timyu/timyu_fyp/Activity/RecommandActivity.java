@@ -156,12 +156,6 @@ public class RecommandActivity extends AppCompatActivity {
                 Log.d(TAG, "onPostExecute: "+e);
             }
 
-            /*catch (JSONException e) {
-                e.printStackTrace();
-            }
-            */
-
-
         }
 
     }
