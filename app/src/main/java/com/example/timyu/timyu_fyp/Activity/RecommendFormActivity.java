@@ -2,20 +2,16 @@ package com.example.timyu.timyu_fyp.Activity;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Resources;
-import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
-import android.text.Html;
-import android.text.Spanned;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -30,6 +26,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.timyu.timyu_fyp.Class.JSONParser;
+import com.example.timyu.timyu_fyp.Class.RecommendationAdapter;
 import com.example.timyu.timyu_fyp.Class.SuggestQuestion;
 import com.example.timyu.timyu_fyp.R;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -38,9 +35,6 @@ import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
-import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
-import com.google.android.gms.location.places.ui.PlaceSelectionListener;
-import com.google.android.gms.vision.text.Text;
 
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONObject;
@@ -51,7 +45,6 @@ import java.util.List;
 import java.util.Locale;
 
 import ernestoyaquello.com.verticalstepperform.VerticalStepperFormLayout;
-import ernestoyaquello.com.verticalstepperform.*;
 import ernestoyaquello.com.verticalstepperform.fragments.BackConfirmationFragment;
 import ernestoyaquello.com.verticalstepperform.interfaces.VerticalStepperForm;
 
@@ -77,17 +70,22 @@ public class RecommendFormActivity extends AppCompatActivity implements Vertical
     JSONParser jsonParser = new JSONParser();
 
     //class
-    SuggestQuestion suggestQuestion = new SuggestQuestion();
+
 
     //List
-    ArrayList<SuggestQuestion> waitToSelect = new ArrayList<SuggestQuestion>();
-    ArrayList listToSelect = new ArrayList();
+    ArrayList<SuggestQuestion> waitToSelect = new ArrayList<>();
+    ArrayList<SuggestQuestion> listToSelect = new ArrayList<>();
     ArrayList selectedPlace = new ArrayList();
 
     //filtering var
     int firstFilter = 150000;
-    int secondFilter = 5;
+    int secondFilter = 5000;
     double compareLat, compareLng;
+    int day = 1;
+    int oneDayTime;
+    int leftTime;
+    int selectedIndex;
+
 
 
 
@@ -326,14 +324,34 @@ public class RecommendFormActivity extends AppCompatActivity implements Vertical
     }
 
     private void checkStartPoint() {
-        if(searchedPlace.length() >= 0) {
-            //Continue button
-            verticalStepperForm.setActiveStepAsCompleted();
-        } else {
-            // This error message is optional (use null if you don't want to display an error message)
-            String errorMessage = "Please enter the start point of this travel";
-            verticalStepperForm.setActiveStepAsUncompleted(errorMessage);
-        }
+        searchedPlace.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start,
+                                          int count, int after) {
+                String errorMessage = "Please search the start point of your travel";
+                Log.d(TAG,errorMessage);
+                verticalStepperForm.setActiveStepAsUncompleted(errorMessage);
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start,
+                                      int before, int count) {
+                if(searchedPlace.getText().toString().length() >= 1 && searchedPlace.getText().toString().length() <= 70) {
+                    //travelTitle = title.getText().toString();
+                    //Continue button
+                    verticalStepperForm.setActiveStepAsCompleted();
+                } else {
+                    // This error message is optional (use null if you don't want to display an error message)
+                    String errorMessage = "The name must have between 1 and 40 characters";
+                    Log.d(TAG,errorMessage);
+                    verticalStepperForm.setActiveStepAsUncompleted(errorMessage);
+                }
+            }
+        });
     }
 
     private void checkDay() {
@@ -352,40 +370,40 @@ public class RecommendFormActivity extends AppCompatActivity implements Vertical
     @Override
     public void sendData() {
         Log.e(TAG,"confirmData");
-        Log.e(TAG,travelTitle);
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Confirm Data");
-        builder.setMessage("Place Title: " + travelTitle +
-        "\nPlace Name: " + searchedStartPoint +
-        "\nPlace Country: " + searchedCountry +
-        "\nTravel Days: " + dayOfTravel +
-        "\nStart Time: " + startTime + " AM" +
-        "\nEnd Time: " + endTime + " PM" +
-        "\nTravel Type: " + travelType)
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        RecommendFormActivity.AttemptRecommend attemptRecommend= new RecommendFormActivity.AttemptRecommend();
-                        attemptRecommend.execute(searchedCountry);
 
-                        AlertDialog.Builder builder = new AlertDialog.Builder(RecommendFormActivity.this);
-                        LayoutInflater inflater = RecommendFormActivity.this.getLayoutInflater();
-                        View view = inflater.inflate(R.layout.layout_recommendationview,null);
+        //init data
+        leftTime = endTime - startTime -4;
+        oneDayTime = endTime - startTime -4;
+        compareLat = pointLat;
+        compareLng = pointLng;
+        selectedPlace.clear();
+        day = 1;
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Confirm Data");
+            builder.setMessage("Place Title: " + travelTitle +
+                    "\nPlace Name: " + searchedStartPoint +
+                    "\nPlace Country: " + searchedCountry +
+                    "\nTravel Days: " + dayOfTravel +
+                    "\nStart Time: " + startTime + " AM" +
+                    "\nEnd Time: " + endTime + " PM" +
+                    "\nTravel Type: " + travelType)
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            //get data from db
+                            RecommendFormActivity.AttemptRecommend attemptRecommend = new RecommendFormActivity.AttemptRecommend();
+                            attemptRecommend.execute(searchedCountry);
 
-                        final ArrayList<SuggestQuestion> nameTest = new ArrayList<>();
-                    }
-                })
-                .setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        BackConfirmationFragment backConfirmation = new BackConfirmationFragment();
-
-                        backConfirmation.show(getSupportFragmentManager(), null);
-
-                    }
-                });
-        // Create the AlertDialog object and return it
-        builder.create().show();
-
+                        }
+                    })
+                    .setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            BackConfirmationFragment backConfirmation = new BackConfirmationFragment();
+                            backConfirmation.show(getSupportFragmentManager(), null);
+                        }
+                    });
+            // Create the AlertDialog object and return it
+            builder.create().show();
 
     }
 
@@ -448,6 +466,8 @@ public class RecommendFormActivity extends AppCompatActivity implements Vertical
 
                 pointLat = place.getLatLng().latitude;
                 pointLng = place.getLatLng().longitude;
+                compareLat = place.getLatLng().latitude;
+                compareLng = place.getLatLng().longitude;
 
             } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
                 Status status = PlaceAutocomplete.getStatus(this, data);
@@ -494,44 +514,120 @@ public class RecommendFormActivity extends AppCompatActivity implements Vertical
 
         protected void onPostExecute(JSONObject result) {
 
-            // dismiss the dialog once product deleted
-            //Toast.makeText(getApplicationContext(),result,Toast.LENGTH_LONG).show();
-
             try {
                 if(result.optInt("success",10) == 30) {
                     android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(RecommendFormActivity.this);
                     builder.setMessage("Internet Error")
                             .setCancelable(false)
-                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    //do things
-                                }
-                            });
+                            .setPositiveButton("OK", null);
                     android.app.AlertDialog alert = builder.create();
                     alert.show();
                 }else {
-                    Log.d(TAG,"get some data from server");
-                    Log.e(TAG,result.getJSONArray("result").getJSONObject(0).optString("Tname","0"));
-                    Log.e(TAG, String.valueOf(result.getJSONArray("result").length()));
-
-
-
-
+                    Log.d(TAG,"Got some data from server");
+                    listToSelect.clear();
+                    waitToSelect.clear();
                     for(int i = 0; i<result.getJSONArray("result").length();i++){
+                        float a = distanceBetween(compareLat,compareLng, (result.getJSONArray("result").getJSONObject(i).optDouble("Tlat",0)), result.getJSONArray("result").getJSONObject(i).optDouble("Tlng",0));
 
-                        float a = distanceBetween(pointLat,pointLng, (result.getJSONArray("result").getJSONObject(i).optDouble("Tlat",0)), result.getJSONArray("result").getJSONObject(i).optDouble("Tlng",0));
-                        Log.e(TAG,a+"第 "+i+"次"  + result.getJSONArray("result").getJSONObject(i).optString("Tname","0"));
-                        suggestQuestion.setPlaceName(result.getJSONArray("result").getJSONObject(i).optString("Tname","0"));
-                        suggestQuestion.setPlaceAddress(result.getJSONArray("result").getJSONObject(i).optString("TAddress","0"));
-                        suggestQuestion.setPlaceCountry(result.getJSONArray("result").getJSONObject(i).optString("TCountry","0"));
-                        suggestQuestion.setPlaceId(result.getJSONArray("result").getJSONObject(i).optString("PlaceId","0"));
-                        suggestQuestion.setPlaceLat(result.getJSONArray("result").getJSONObject(i).optDouble("Tlat",0));
-                        suggestQuestion.setPlaceLng(result.getJSONArray("result").getJSONObject(i).optDouble("Tlng",0));
-                        suggestQuestion.setPlaceTime(result.getJSONArray("result").getJSONObject(i).optInt("TSuggestTime",0));
-                        suggestQuestion.setPlaceType(result.getJSONArray("result").getJSONObject(i).optString("TType","0"));
-                        waitToSelect.add(suggestQuestion);
+                        if(a > 0 && a < secondFilter){
+                            SuggestQuestion suggestQuestion = new SuggestQuestion();
+                            suggestQuestion.setPlaceName(result.getJSONArray("result").getJSONObject(i).optString("Tname","0"));
+                            suggestQuestion.setPlaceAddress(result.getJSONArray("result").getJSONObject(i).optString("TAddress","0"));
+                            suggestQuestion.setPlaceCountry(result.getJSONArray("result").getJSONObject(i).optString("TCountry","0"));
+                            suggestQuestion.setPlaceId(result.getJSONArray("result").getJSONObject(i).optString("PlaceId","0"));
+                            suggestQuestion.setPlaceLat(result.getJSONArray("result").getJSONObject(i).optDouble("Tlat",0));
+                            suggestQuestion.setPlaceLng(result.getJSONArray("result").getJSONObject(i).optDouble("Tlng",0));
+                            suggestQuestion.setPlaceTime(result.getJSONArray("result").getJSONObject(i).optInt("TSuggestTime",0));
+                            suggestQuestion.setPlaceType(result.getJSONArray("result").getJSONObject(i).optString("TType","0"));
+                            suggestQuestion.setStatus(false);
+                            listToSelect.add(suggestQuestion);
+                        }
+                        if(a > 0 && a < firstFilter){
+                            SuggestQuestion suggestQuestion1 = new SuggestQuestion();
+                            suggestQuestion1.setPlaceName(result.getJSONArray("result").getJSONObject(i).optString("Tname","0"));
+                            suggestQuestion1.setPlaceAddress(result.getJSONArray("result").getJSONObject(i).optString("TAddress","0"));
+                            suggestQuestion1.setPlaceCountry(result.getJSONArray("result").getJSONObject(i).optString("TCountry","0"));
+                            suggestQuestion1.setPlaceId(result.getJSONArray("result").getJSONObject(i).optString("PlaceId","0"));
+                            suggestQuestion1.setPlaceLat(result.getJSONArray("result").getJSONObject(i).optDouble("Tlat",0));
+                            suggestQuestion1.setPlaceLng(result.getJSONArray("result").getJSONObject(i).optDouble("Tlng",0));
+                            suggestQuestion1.setPlaceTime(result.getJSONArray("result").getJSONObject(i).optInt("TSuggestTime",0));
+                            suggestQuestion1.setPlaceType(result.getJSONArray("result").getJSONObject(i).optString("TType","0"));
+                            suggestQuestion1.setStatus(false);
+                            waitToSelect.add(suggestQuestion1);
+                        }
+
                     }
+                    Log.e("   list to select", String.valueOf(listToSelect.size()));
+                    Log.e("   wait to select", String.valueOf(waitToSelect.size()));
 
+                    //show the list in the log
+                    for(int i=0;i<listToSelect.size();i++){
+                        Log.d("Name",listToSelect.get(i).getPlaceName());
+                    }
+                    //alert list box
+                    AlertDialog.Builder builder = new AlertDialog.Builder(RecommendFormActivity.this);
+                    builder.setTitle("DAY : "+day);
+                    LayoutInflater inflater = RecommendFormActivity.this.getLayoutInflater();
+                    View view = inflater.inflate(R.layout.layout_recommendationview, null);
+
+                    //The list
+                    final RecyclerView list = (RecyclerView) view.findViewById(R.id.list);
+                    final RecommendationAdapter recommendationAdapter = new RecommendationAdapter(listToSelect);
+                    recommendationAdapter.setOnItemClickListener(new RecommendationAdapter.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(View view, int position) {
+                            for(SuggestQuestion suggestQuestion : listToSelect){
+                                suggestQuestion.setStatus(false);
+                            }
+                            listToSelect.get(position).setStatus(true);
+                            selectedIndex = position;
+                            recommendationAdapter.notifyDataSetChanged();
+
+                        }
+                    });
+                    list.setAdapter(recommendationAdapter);
+                    list.setLayoutManager(new LinearLayoutManager(RecommendFormActivity.this));
+
+                    builder.setView(view);
+
+                    if(leftTime >= 4 && day <= dayOfTravel) {
+                        builder.setPositiveButton("Next Spot", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int id) {
+                                leftTime = leftTime - listToSelect.get(selectedIndex).getPlaceTime();
+                                selectedPlace.add(listToSelect.get(selectedIndex));
+                                Log.d("waitToSelect size",selectedPlace.size()+"");
+                                Log.d("leftTime", leftTime+"");
+                                RecommendFormActivity.AttemptRecommend attemptRecommend = new RecommendFormActivity.AttemptRecommend();
+                                attemptRecommend.execute(searchedCountry);
+
+                            }
+                        });
+                        builder.show();
+                    }else if(leftTime < 4 && day < dayOfTravel){
+                        builder.setPositiveButton("Next Day", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int id) {
+                                day += day;
+                                leftTime = oneDayTime;
+                                selectedPlace.add(listToSelect.get(selectedIndex));
+                                Log.d("waitToSelect size",selectedPlace.size()+"");
+                                Log.d("leftTime", leftTime+"");
+                                RecommendFormActivity.AttemptRecommend attemptRecommend = new RecommendFormActivity.AttemptRecommend();
+                                attemptRecommend.execute(searchedCountry);
+                            }
+                        });
+                        builder.show();
+                    }else if(leftTime < 4 && day == dayOfTravel){
+                        builder.setPositiveButton("Finish", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int id) {
+
+                            }
+                        });
+                        builder.show();
+
+                    }
                 }
             }catch (Exception e){
                 Log.d(TAG, "onPostExecute: "+e);
