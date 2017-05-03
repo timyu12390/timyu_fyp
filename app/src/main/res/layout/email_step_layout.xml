@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="0.20"
         android:onClick="searchClick"
-        android:text="sEARCH" />
+        android:text="SEARCH" />
 
     <TextView
         android:id="@+id/txtSearchedPlace"

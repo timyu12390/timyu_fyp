@@ -67,6 +67,7 @@ public class RecommandActivity extends AppCompatActivity {
         }
 
         RecyclerView list = (RecyclerView) view.findViewById(R.id.list);
+
         //Row on click
         final RecommendationAdapter recommendationAdapter = new RecommendationAdapter(nameTest);
         recommendationAdapter.setOnItemClickListener(new RecommendationAdapter.OnItemClickListener() {

@@ -5,11 +5,62 @@ package com.example.timyu.timyu_fyp.Class;
  */
 
 public class SuggestQuestion {
-    String placeName,placeId;
+    String placeName;
+    String placeId;
+    String placeCountry;
+    String placeAddress;
+    String placeType;
+    Double placeLat, placeLng;
+    int placeTime;
     boolean status = false;
 
+    public String getPlaceAddress() {
+        return placeAddress;
+    }
 
+    public void setPlaceAddress(String placeAddress) {
+        this.placeAddress = placeAddress;
+    }
 
+    public String getPlaceType() {
+        return placeType;
+    }
+
+    public void setPlaceType(String placeType) {
+        this.placeType = placeType;
+    }
+
+    public Double getPlaceLat() {
+        return placeLat;
+    }
+
+    public void setPlaceLat(Double placeLat) {
+        this.placeLat = placeLat;
+    }
+
+    public Double getPlaceLng() {
+        return placeLng;
+    }
+
+    public void setPlaceLng(Double placeLng) {
+        this.placeLng = placeLng;
+    }
+
+    public int getPlaceTime() {
+        return placeTime;
+    }
+
+    public void setPlaceTime(int placeTime) {
+        this.placeTime = placeTime;
+    }
+
+    public String getPlaceCountry() {
+        return placeCountry;
+    }
+
+    public void setPlaceCountry(String placeCountry) {
+        this.placeCountry = placeCountry;
+    }
 
     public Boolean getStatus() {
         return status;
