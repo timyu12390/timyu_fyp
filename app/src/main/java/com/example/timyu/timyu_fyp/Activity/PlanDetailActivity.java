@@ -316,16 +316,6 @@ public class PlanDetailActivity extends AppCompatActivity implements PlaceSelect
             }catch (Exception e){
 
             }
-
-            /*catch (JSONException e) {
-                e.printStackTrace();
-            }
-            */
-
-
         }
-
     }
-
-
 }

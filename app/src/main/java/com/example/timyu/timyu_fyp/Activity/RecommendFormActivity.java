@@ -27,7 +27,9 @@ import android.widget.Toast;
 
 import com.example.timyu.timyu_fyp.Class.JSONParser;
 import com.example.timyu.timyu_fyp.Class.RecommendationAdapter;
+import com.example.timyu.timyu_fyp.Class.SelectedSpot;
 import com.example.timyu.timyu_fyp.Class.SuggestQuestion;
+import com.example.timyu.timyu_fyp.Class.UserManager;
 import com.example.timyu.timyu_fyp.R;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
@@ -67,6 +69,7 @@ public class RecommendFormActivity extends AppCompatActivity implements Vertical
 
     //Get data from db
     String RECOMMEND = "http://timyu123.com/include/recommend.php";
+    String USERPLAN = "http://timyu123.com/include/userPlan.php";
     JSONParser jsonParser = new JSONParser();
 
     //class
@@ -75,7 +78,7 @@ public class RecommendFormActivity extends AppCompatActivity implements Vertical
     //List
     ArrayList<SuggestQuestion> waitToSelect = new ArrayList<>();
     ArrayList<SuggestQuestion> listToSelect = new ArrayList<>();
-    ArrayList selectedPlace = new ArrayList();
+    ArrayList <SelectedSpot>selectedPlace = new ArrayList<>();
 
     //filtering var
     int firstFilter = 150000;
@@ -85,6 +88,7 @@ public class RecommendFormActivity extends AppCompatActivity implements Vertical
     int oneDayTime;
     int leftTime;
     int selectedIndex;
+    String planId;
 
 
 
@@ -378,6 +382,7 @@ public class RecommendFormActivity extends AppCompatActivity implements Vertical
         compareLng = pointLng;
         selectedPlace.clear();
         day = 1;
+        planId =  ( UserManager.getInstance().getUser().getId() + ""+ (Math.random()* 999999999)  +"" + UserManager.getInstance().getUser().getId()) ;
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Confirm Data");
             builder.setMessage("Place Title: " + travelTitle +
@@ -590,14 +595,26 @@ public class RecommendFormActivity extends AppCompatActivity implements Vertical
 
                     builder.setView(view);
 
+                    //selected action
                     if(leftTime >= 4 && day <= dayOfTravel) {
                         builder.setPositiveButton("Next Spot", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int id) {
                                 leftTime = leftTime - listToSelect.get(selectedIndex).getPlaceTime();
-                                selectedPlace.add(listToSelect.get(selectedIndex));
-                                Log.d("waitToSelect size",selectedPlace.size()+"");
-                                Log.d("leftTime", leftTime+"");
+                                compareLng = listToSelect.get(selectedIndex).getPlaceLng();
+                                compareLat = listToSelect.get(selectedIndex).getPlaceLat();
+                                //(String planid, String plantitle,int planday, int plantime, int planstart, int planend, double planlat, double planlng, String planaddress, String planname, String plancountry, long userid)
+
+                                selectedPlace.add(
+                                        selectedSpot(planId, travelTitle, day, listToSelect.get(selectedIndex).getPlaceTime(),
+                                        startTime, endTime, listToSelect.get(selectedIndex).getPlaceLat(),
+                                        listToSelect.get(selectedIndex).getPlaceLng(),
+                                        listToSelect.get(selectedIndex).getPlaceAddress(),
+                                        listToSelect.get(selectedIndex).getPlaceName(),
+                                        listToSelect.get(selectedIndex).getPlaceCountry(),
+                                                (int) UserManager.getInstance().getUser().getId())
+                                );
+
                                 RecommendFormActivity.AttemptRecommend attemptRecommend = new RecommendFormActivity.AttemptRecommend();
                                 attemptRecommend.execute(searchedCountry);
 
@@ -610,9 +627,18 @@ public class RecommendFormActivity extends AppCompatActivity implements Vertical
                             public void onClick(DialogInterface dialog, int id) {
                                 day += day;
                                 leftTime = oneDayTime;
-                                selectedPlace.add(listToSelect.get(selectedIndex));
-                                Log.d("waitToSelect size",selectedPlace.size()+"");
-                                Log.d("leftTime", leftTime+"");
+                                compareLng = pointLng;
+                                compareLat = pointLat;
+                                selectedPlace.add(
+                                        selectedSpot(planId, travelTitle, day, listToSelect.get(selectedIndex).getPlaceTime(),
+                                                startTime, endTime, listToSelect.get(selectedIndex).getPlaceLat(),
+                                                listToSelect.get(selectedIndex).getPlaceLng(),
+                                                listToSelect.get(selectedIndex).getPlaceAddress(),
+                                                listToSelect.get(selectedIndex).getPlaceName(),
+                                                listToSelect.get(selectedIndex).getPlaceCountry(),
+                                                (int) UserManager.getInstance().getUser().getId())
+                                );
+
                                 RecommendFormActivity.AttemptRecommend attemptRecommend = new RecommendFormActivity.AttemptRecommend();
                                 attemptRecommend.execute(searchedCountry);
                             }
@@ -622,6 +648,33 @@ public class RecommendFormActivity extends AppCompatActivity implements Vertical
                         builder.setPositiveButton("Finish", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int id) {
+                                selectedPlace.add(
+                                        selectedSpot(planId, travelTitle, day, listToSelect.get(selectedIndex).getPlaceTime(),
+                                                startTime, endTime, listToSelect.get(selectedIndex).getPlaceLat(),
+                                                listToSelect.get(selectedIndex).getPlaceLng(),
+                                                listToSelect.get(selectedIndex).getPlaceAddress(),
+                                                listToSelect.get(selectedIndex).getPlaceName(),
+                                                listToSelect.get(selectedIndex).getPlaceCountry(),
+                                                (int) UserManager.getInstance().getUser().getId())
+                                );
+                                Log.e("Total size", selectedPlace.size()+"");
+
+                                for(int i = 0; i<selectedPlace.size();i++){
+                                    RecommendFormActivity.AttemptAddPlan attemptAddPlan = new AttemptAddPlan();
+
+                                    attemptAddPlan.execute(selectedPlace.get(i).getPlanId(),
+                                            selectedPlace.get(i).getPlanTitle(),
+                                            String.valueOf(selectedPlace.get(i).getPlanDay()),
+                                            String.valueOf(selectedPlace.get(i).getPlanTime()),
+                                            String.valueOf(selectedPlace.get(i).getPlanStart()),
+                                            String.valueOf(selectedPlace.get(i).getPlanEnd()),
+                                            String.valueOf(selectedPlace.get(i).getPlanLat()),
+                                            String.valueOf(selectedPlace.get(i).getPlanLng()),
+                                            selectedPlace.get(i).getPlanName(),
+                                            selectedPlace.get(i).getPlanAddress(),
+                                            selectedPlace.get(i).getPlanCountry(),
+                                            String.valueOf(selectedPlace.get(i).getUserId()));
+                                }
 
                             }
                         });
@@ -637,6 +690,77 @@ public class RecommendFormActivity extends AppCompatActivity implements Vertical
 
     }
 
+    public SelectedSpot selectedSpot(String planid, String plantitle, int planday, int plantime, int planstart, int planend, double planlat, double planlng, String planaddress, String planname, String plancountry, int userid){
+        SelectedSpot selectedSpot = new SelectedSpot();
+        selectedSpot.setPlanId(planid);
+        selectedSpot.setPlanTitle(plantitle);
+        selectedSpot.setPlanDay(planday);
+        selectedSpot.setPlanTime(plantime);
+        selectedSpot.setPlanStart(planstart);
+        selectedSpot.setPlanEnd(planend);
+        selectedSpot.setPlanLat(planlat);
+        selectedSpot.setPlanLng(planlng);
+        selectedSpot.setPlanAddress(planaddress);
+        selectedSpot.setPlanName(planname);
+        selectedSpot.setPlanCountry(plancountry);
+        selectedSpot.setUserId(userid);
+        return  selectedSpot;
+    }
 
+    private class AttemptAddPlan extends AsyncTask<String,Void,JSONObject> {
+
+        @Override
+        protected JSONObject doInBackground(String... args) {
+            String planid = args[0];
+            String plantitle= args[1];
+            String planday = args[2];
+            String plantime = args[3];
+            String planstart= args[4];
+            String planend = args[5];
+            String planlat= args[6];
+            String planlng = args[7];
+            String planaddress= args[8];
+            String planname= args[9];
+            String plancountry= args[10];
+            String userid= args[11];
+
+            ArrayList params = new ArrayList();
+            params.add(new BasicNameValuePair("PlanId", planid));
+            params.add(new BasicNameValuePair("Plantitle", plantitle));
+            params.add(new BasicNameValuePair("Planday", planday));
+            params.add(new BasicNameValuePair("Plantime", plantime));
+            params.add(new BasicNameValuePair("Planstarttime", planstart));
+            params.add(new BasicNameValuePair("Planendtime", planend));
+            params.add(new BasicNameValuePair("Planlat", planlat));
+            params.add(new BasicNameValuePair("Planlng", planlng));
+            params.add(new BasicNameValuePair("Planaddress", planaddress));
+            params.add(new BasicNameValuePair("Planname", planname));
+            params.add(new BasicNameValuePair("Plancountry", plancountry));
+            params.add(new BasicNameValuePair("userId", userid));
+
+            Log.e("Data","id:"+planid +"\ntitle: " +plantitle +"\nday: " +planday +"\ntime: " +plantime +"\nstart: " +planstart +"\nend: " +planend +"\nlat: " +planlat +"\nlng: " +planlng +"\naddress: " +planaddress +"\nname: " +planname +"\ncity: " +plancountry +"\nuid: " +userid);
+            Log.e("Show Params:",params+"");
+
+            JSONObject json = jsonParser.makeHttpRequest(USERPLAN, "POST", params);
+
+            return json;
+        }
+
+        protected void onPostExecute(JSONObject result) {
+
+            // dismiss the dialog once product deleted
+            //Toast.makeText(getApplicationContext(),result,Toast.LENGTH_LONG).show();
+
+            try {
+                if (result.getInt("success") == 40) {
+                    Log.e(TAG, "Insert success" );
+                }else{
+                    Log.e(TAG, "Insert not success" );
+                }
+            }catch (Exception e){
+
+            }
+        }
+    }
 
 }

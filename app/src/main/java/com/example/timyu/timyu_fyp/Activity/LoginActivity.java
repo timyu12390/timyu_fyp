@@ -5,10 +5,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.NavigationView;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.example.timyu.timyu_fyp.Class.JSONParser;
 import com.example.timyu.timyu_fyp.Class.User;
@@ -93,10 +95,14 @@ public class LoginActivity extends AppCompatActivity {
                     alert.show();
                 }else if(result.getString("userName") != null && result.getString("userEmail") != null){
 
+
                     User user = new User(result.getInt("Uid"), result.getString("userName"),result.getString("userEmail"));
                     UserManager.getInstance().setUser(getApplicationContext(), user);
+                    Log.e("",""+UserManager.getInstance().getUser().getId());
                     System.out.println("231231232121222311");
                     Log.d(TAG, UserManager.getInstance().getUser().getId()+"");
+
+                    finish();
 
                 } else {
                     AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
@@ -112,7 +118,6 @@ public class LoginActivity extends AppCompatActivity {
                     //Toast.makeText(getApplicationContext(), "Unable to retrieve any data from server", Toast.LENGTH_LONG).show();
                 }
             }catch (Exception e){
-                Log.d(TAG, "fuck you ios: "+e);
                 Log.d(TAG, "onPostExecute: "+e);
             }
 
