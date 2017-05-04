@@ -656,6 +656,7 @@ public class RecommendFormActivity extends AppCompatActivity implements Vertical
                                                 listToSelect.get(selectedIndex).getPlaceName(),
                                                 listToSelect.get(selectedIndex).getPlaceCountry(),
                                                 (int) UserManager.getInstance().getUser().getId())
+                                        //
                                 );
                                 Log.e("Total size", selectedPlace.size()+"");
 
