@@ -108,6 +108,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
+        boolean isLogin = UserManager.getInstance().isLoggedIn();
 
         switch (id){
             case R.id.nav_login:
@@ -121,12 +122,24 @@ public class MainActivity extends AppCompatActivity
                 startActivity(designPlan);
                 break;
             case R.id.nav_slideshow:
-
-                Intent recommend = new Intent(this, RecommandActivity.class);
-                startActivity(recommend);
+                if (isLogin) {
+                    Intent planList = new Intent(this, UserPlanListActivity.class);
+                    startActivity(planList);
+                }else {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setMessage("Please Login")
+                            .setPositiveButton("Login", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    Intent login = new Intent(MainActivity.this, LoginActivity.class);
+                                    startActivity(login);
+                                }
+                            })
+                            .setNegativeButton("Cancel", null);
+                    builder.create().show();
+                }
                 break;
             case R.id.nav_manage:
-                boolean isLogin = UserManager.getInstance().isLoggedIn();
+
                 if (isLogin) {
                     Intent recommendForm = new Intent(this, RecommendFormActivity.class);
                     startActivity(recommendForm);

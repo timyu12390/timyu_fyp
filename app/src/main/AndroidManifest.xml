@@ -31,7 +31,9 @@
         <activity android:name=".Activity.DesignPlanActivity" />
         <activity android:name=".Activity.PlanDetailActivity" />
         <activity android:name=".Activity.RecommandActivity" />
-        <activity android:name=".Activity.RecommendFormActivity"></activity>
+        <activity android:name=".Activity.RecommendFormActivity" />
+        <activity android:name=".Activity.UserPlanListActivity" />
+        <activity android:name=".Activity.UserPlanDatailActivity"></activity>
     </application>
 
 </manifest>

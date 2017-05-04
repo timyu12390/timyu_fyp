@@ -13,6 +13,7 @@ import com.example.timyu.timyu_fyp.Activity.PlanDetailActivity;
 import com.example.timyu.timyu_fyp.R;
 import com.google.android.gms.location.places.Place;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,6 +28,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     public MyAdapter(List<PlaceItem> list) {
         data = list;
     }
+
     public interface MyAdapterListener{
         void onItemClicked(View view,PlaceItem placeItem);
 
