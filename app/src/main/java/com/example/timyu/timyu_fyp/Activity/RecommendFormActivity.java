@@ -675,6 +675,7 @@ public class RecommendFormActivity extends AppCompatActivity implements Vertical
                                             selectedPlace.get(i).getPlanCountry(),
                                             String.valueOf(selectedPlace.get(i).getUserId()));
                                 }
+                                finish();
 
                             }
                         });

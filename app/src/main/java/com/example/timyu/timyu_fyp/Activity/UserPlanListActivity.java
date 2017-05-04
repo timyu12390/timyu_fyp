@@ -96,7 +96,7 @@ public class UserPlanListActivity extends AppCompatActivity {
                         @Override
                         public void onItemClicked(View view, UserPlan userPlan) {
                             Log.e("","clicked");
-                            Intent detail = new Intent(UserPlanListActivity.this, PlanDetailActivity.class);
+                            Intent detail = new Intent(UserPlanListActivity.this, UserPlanDetailActivity.class);
                             detail.putExtra("PlanId",userPlan.getPlanId());
                             startActivity(detail);
                         }

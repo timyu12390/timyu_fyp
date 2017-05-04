@@ -33,7 +33,8 @@
         <activity android:name=".Activity.RecommandActivity" />
         <activity android:name=".Activity.RecommendFormActivity" />
         <activity android:name=".Activity.UserPlanListActivity" />
-        <activity android:name=".Activity.UserPlanDatailActivity"></activity>
+        <activity android:name=".Activity.UserPlanDetailActivity" />
+        <activity android:name=".Activity.PlaceDetailActivity"></activity>
     </application>
 
 </manifest>

@@ -52,13 +52,14 @@ public class PlanAdapter extends RecyclerView.Adapter<PlanAdapter.ViewHolder> {
         return data.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         // each data item is just a string in this case
         public TextView mTextView;
 
         public ViewHolder(View v) {
             super(v);
             mTextView = (TextView)v.findViewById(R.id.txtPlanTitle);
+            v.setOnClickListener(this);
         }
         public void onClick(View v){
             if(listener != null){

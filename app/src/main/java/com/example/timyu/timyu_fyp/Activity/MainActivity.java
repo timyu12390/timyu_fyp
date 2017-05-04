@@ -19,6 +19,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.timyu.timyu_fyp.Class.SharedPreferencesEditor;
 import com.example.timyu.timyu_fyp.Class.UserManager;
 import com.example.timyu.timyu_fyp.R;
 
@@ -60,6 +61,8 @@ public class MainActivity extends AppCompatActivity
         View header = navigationView.inflateHeaderView(R.layout.nav_header_main);
         loginUser = (TextView) header.findViewById(R.id.txtUser);
         loginEmail = (TextView) header.findViewById(R.id.txtEmail);
+        SharedPreferencesEditor sharedPreferencesEditor = new SharedPreferencesEditor(this);
+        UserManager.getInstance().setUser(this, sharedPreferencesEditor.getUser());
         setNavViewMenu();
 
     }

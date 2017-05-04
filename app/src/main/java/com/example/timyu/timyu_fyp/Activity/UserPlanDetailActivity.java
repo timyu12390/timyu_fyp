@@ -2,12 +2,14 @@ package com.example.timyu.timyu_fyp.Activity;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
 
 import com.example.timyu.timyu_fyp.Class.JSONParser;
 import com.example.timyu.timyu_fyp.Class.PlanAdapter;
@@ -85,14 +87,14 @@ public class UserPlanDetailActivity extends AppCompatActivity {
                             });
                     AlertDialog alert = builder.create();
                     alert.show();
-                }else if(result.getString("Plantitle") != null && result.getString("Plantime") != null){
+                }else if(result!= null){
                 //(String planId, String planTitle, String planAddress, String planName, String planCountry, int planDay, int planTime, int planStart, int planEnd, int userId, double planLat, double planLng)
-                    for(int i = 0; i<result.length();i++){
+                    for(int i = 0; i<result.getJSONArray("result").length();i++){
                         UserPlanDetail userPlanDetail = new UserPlanDetail(
                                 result.getJSONArray("result").getJSONObject(i).optString("PlanId","0"),
                                 result.getJSONArray("result").getJSONObject(i).optString("Plantitle","0"),
-                                result.getJSONArray("result").getJSONObject(i).optString("Planaddress","0"),
                                 result.getJSONArray("result").getJSONObject(i).optString("Planname","0"),
+                                result.getJSONArray("result").getJSONObject(i).optString("Planaddress","0"),
                                 result.getJSONArray("result").getJSONObject(i).optString("Plancountry","0"),
                                 result.getJSONArray("result").getJSONObject(i).optInt("Planday",0),
                                 result.getJSONArray("result").getJSONObject(i).optInt("Plantime",0),
@@ -104,9 +106,23 @@ public class UserPlanDetailActivity extends AppCompatActivity {
                         );
                         dataList.add(userPlanDetail);
 
+
                         planDetailAdapter = new PlanDetailAdapter(dataList);
                         mRecyclerView.setAdapter(planDetailAdapter);
                     }
+
+                    planDetailAdapter.setListener(new PlanDetailAdapter.PlanDetailAdapterListener() {
+                        @Override
+                        public void onItemClicked(View view, UserPlanDetail userPlanDetail) {
+                            Log.e("","clicked");
+                            Intent detail = new Intent(UserPlanDetailActivity.this, PlaceDetailActivity.class);
+                            detail.putExtra("Planname",userPlanDetail.getPlanName());
+                            detail.putExtra("Planaddress",userPlanDetail.getPlanAddress());
+                            detail.putExtra("Planlat",userPlanDetail.getPlanLat());
+                            detail.putExtra("Planlng",userPlanDetail.getPlanLng());
+                            startActivity(detail);
+                        }
+                    });
 
 
                 }

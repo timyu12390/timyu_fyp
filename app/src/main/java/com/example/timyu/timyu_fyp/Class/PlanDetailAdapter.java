@@ -33,8 +33,8 @@ public class PlanDetailAdapter extends RecyclerView.Adapter<PlanDetailAdapter.Vi
 
     @Override
     public void onBindViewHolder(PlanDetailAdapter.ViewHolder holder, int position) {
-        holder.textTime.setText(data.get(position).getPlanTime());
-        holder.textTitle.setText(data.get(position).getPlanTitle());
+        holder.textTime.setText(data.get(position).getPlanTime() +"");
+        holder.textTitle.setText(data.get(position).getPlanName());
     }
 
 
@@ -53,15 +53,16 @@ public class PlanDetailAdapter extends RecyclerView.Adapter<PlanDetailAdapter.Vi
 
 
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         // each data item is just a string in this case
         public TextView textTitle;
         public TextView textTime;
 
         public ViewHolder(View v) {
             super(v);
-            textTitle = (TextView)v.findViewById(R.id.txtTitle);
+            textTitle = (TextView)v.findViewById(R.id.txtName);
             textTime = (TextView)v.findViewById(R.id.txtTime);
+            v.setOnClickListener(this);
         }
         public void onClick(View v){
             if(listener != null){
